@@ -44,10 +44,24 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: petshop_frontend
-    ports:
-      - "3000:80"
+    # Porta removida - agora acessa apenas via nginx-proxy
+    expose:
+      - "80"
     depends_on:
       - backend
+
+  # Proxy reverso nginx na porta 80 (padrão HTTP)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: petshop_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:
