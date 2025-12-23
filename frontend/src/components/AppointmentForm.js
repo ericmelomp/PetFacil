@@ -16,6 +16,7 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
   });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (appointment) {
@@ -167,9 +168,12 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
     if (!appointment) return;
-    if (!window.confirm('Tem certeza que deseja excluir este agendamento?')) return;
 
     setLoading(true);
     try {
@@ -181,7 +185,12 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
       alert('Erro ao excluir agendamento. Tente novamente.');
     } finally {
       setLoading(false);
+      setShowDeleteConfirm(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
   };
 
   return (
@@ -379,7 +388,7 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
               <button
                 type="button"
                 className="delete-button"
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 disabled={loading}
               >
                 Excluir
@@ -405,6 +414,53 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
           </div>
         </form>
           </>
+        )}
+        
+        {showDeleteConfirm && (
+          <div className="confirm-modal-overlay" onClick={handleDeleteCancel}>
+            <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="confirm-modal-header">
+                <h3>Confirmar Exclusão</h3>
+              </div>
+              <div className="confirm-modal-body">
+                <p>Tem certeza que deseja excluir este agendamento?</p>
+                {appointment && (
+                  <div className="confirm-appointment-info">
+                    <p><strong>Pet:</strong> {appointment.pet_name}</p>
+                    <p><strong>Dono:</strong> {appointment.owner_name}</p>
+                    {appointment.appointment_date && (
+                      <p><strong>Data:</strong> {new Date(appointment.appointment_date).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                    )}
+                  </div>
+                )}
+                <p className="confirm-warning">Esta ação não pode ser desfeita.</p>
+              </div>
+              <div className="confirm-modal-actions">
+                <button
+                  type="button"
+                  className="confirm-cancel-button"
+                  onClick={handleDeleteCancel}
+                  disabled={loading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="confirm-delete-button"
+                  onClick={handleDeleteConfirm}
+                  disabled={loading}
+                >
+                  {loading ? 'Excluindo...' : 'Excluir'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

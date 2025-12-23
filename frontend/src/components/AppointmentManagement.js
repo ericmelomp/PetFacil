@@ -8,6 +8,9 @@ const AppointmentManagement = ({ appointments, services, onUpdate }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -82,18 +85,31 @@ const AppointmentManagement = ({ appointments, services, onUpdate }) => {
     }
   };
 
-  const handleDelete = async (appointment) => {
-    if (!window.confirm(`Tem certeza que deseja excluir permanentemente o agendamento de ${appointment.pet_name}?`)) {
-      return;
-    }
+  const handleDelete = (appointment) => {
+    setAppointmentToDelete(appointment);
+    setShowDeleteConfirm(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!appointmentToDelete) return;
+
+    setDeleting(true);
     try {
-      await deleteAppointment(appointment.id);
+      await deleteAppointment(appointmentToDelete.id);
       onUpdate();
+      setShowDeleteConfirm(false);
+      setAppointmentToDelete(null);
     } catch (error) {
       console.error('Error deleting appointment:', error);
       alert('Erro ao excluir agendamento. Tente novamente.');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setAppointmentToDelete(null);
   };
 
   const handleFormClose = () => {
@@ -276,6 +292,48 @@ const AppointmentManagement = ({ appointments, services, onUpdate }) => {
           onClose={handleFormClose}
           onSave={onUpdate}
         />
+      )}
+
+      {showDeleteConfirm && appointmentToDelete && (
+        <div className="confirm-modal-overlay" onClick={handleDeleteCancel}>
+          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-modal-header">
+              <h3>Confirmar Exclusão</h3>
+            </div>
+            <div className="confirm-modal-body">
+              <p>Tem certeza que deseja excluir permanentemente este agendamento?</p>
+              <div className="confirm-appointment-info">
+                <p><strong>Pet:</strong> {appointmentToDelete.pet_name}</p>
+                <p><strong>Dono:</strong> {appointmentToDelete.owner_name}</p>
+                {appointmentToDelete.appointment_date && (
+                  <p><strong>Data:</strong> {formatDateTime(appointmentToDelete.appointment_date)}</p>
+                )}
+                {appointmentToDelete.service_name && (
+                  <p><strong>Serviço:</strong> {appointmentToDelete.service_name}</p>
+                )}
+              </div>
+              <p className="confirm-warning">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div className="confirm-modal-actions">
+              <button
+                type="button"
+                className="confirm-cancel-button"
+                onClick={handleDeleteCancel}
+                disabled={deleting}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="confirm-delete-button"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
