@@ -287,18 +287,18 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
                     />
                   </div>
                 </div>
-                {!appointment && (
-                  <button
-                    type="button"
-                    className="add-pet-button-inline"
-                    onClick={addPet}
-                    title="Adicionar outro pet"
-                  >
-                    +
-                  </button>
-                )}
               </div>
             ))}
+            {!appointment && (
+              <button
+                type="button"
+                className="add-pet-button-inline"
+                onClick={addPet}
+                title="Adicionar outro pet"
+              >
+                +
+              </button>
+            )}
           </div>
 
           <div className="form-group">
