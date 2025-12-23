@@ -4,16 +4,14 @@ import { createAppointment, updateAppointment, deleteAppointment } from '../serv
 
 const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave }) => {
   const [formData, setFormData] = useState({
-    pet_name: '',
+    pets: [{ name: '', service_id: '', price: '' }],
     owner_name: '',
     owner_phone: '',
-    service_id: '',
     appointment_date: '',
     appointment_time: '',
     pickup_service: false,
     pickup_address: '',
     notes: '',
-    price: '',
     status: 'scheduled'
   });
   const [loading, setLoading] = useState(false);
@@ -28,17 +26,20 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
       const day = String(date.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       
+      // Para edição, manter formato antigo (um pet)
       setFormData({
-        pet_name: appointment.pet_name || '',
+        pets: [{
+          name: appointment.pet_name || '',
+          service_id: appointment.service_id || '',
+          price: appointment.price || ''
+        }],
         owner_name: appointment.owner_name || '',
         owner_phone: appointment.owner_phone || '',
-        service_id: appointment.service_id || '',
         appointment_date: dateStr,
         appointment_time: date.toTimeString().slice(0, 5),
         pickup_service: appointment.pickup_service || false,
         pickup_address: appointment.pickup_address || '',
         notes: appointment.notes || '',
-        price: appointment.price || '',
         status: appointment.status || 'scheduled'
       });
     } else if (selectedDate) {
@@ -64,6 +65,30 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
     }));
   };
 
+  const handlePetChange = (index, field, value) => {
+    setFormData(prev => {
+      const newPets = [...prev.pets];
+      newPets[index] = { ...newPets[index], [field]: value };
+      return { ...prev, pets: newPets };
+    });
+  };
+
+  const addPet = () => {
+    setFormData(prev => ({
+      ...prev,
+      pets: [...prev.pets, { name: '', service_id: '', price: '' }]
+    }));
+  };
+
+  const removePet = (index) => {
+    if (formData.pets.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        pets: prev.pets.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -80,19 +105,51 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
       // We'll send it as a string that PostgreSQL can parse
       const appointmentDateTime = localDate.toISOString();
 
-      const data = {
-        ...formData,
-        appointment_date: appointmentDateTime,
-        service_id: formData.service_id ? parseInt(formData.service_id) : null,
-        price: formData.price ? parseFloat(formData.price) : null
-      };
-
       if (appointment) {
+        // Para edição, manter comportamento antigo (um pet)
+        const data = {
+          pet_name: formData.pets[0].name,
+          owner_name: formData.owner_name,
+          owner_phone: formData.owner_phone,
+          service_id: formData.pets[0].service_id ? parseInt(formData.pets[0].service_id) : null,
+          appointment_date: appointmentDateTime,
+          pickup_service: formData.pickup_service,
+          pickup_address: formData.pickup_address,
+          notes: formData.notes,
+          price: formData.pets[0].price ? parseFloat(formData.pets[0].price) : null,
+          status: formData.status
+        };
         await updateAppointment(appointment.id, data);
         onSave();
         onClose();
       } else {
-        await createAppointment(data);
+        // Para novos agendamentos, criar um para cada pet
+        const petsToCreate = formData.pets.filter(pet => pet.name.trim() !== '');
+        
+        if (petsToCreate.length === 0) {
+          alert('Adicione pelo menos um pet ao agendamento.');
+          setLoading(false);
+          return;
+        }
+
+        const createPromises = petsToCreate.map(pet => {
+          const data = {
+            pet_name: pet.name,
+            owner_name: formData.owner_name,
+            owner_phone: formData.owner_phone,
+            service_id: pet.service_id ? parseInt(pet.service_id) : null,
+            appointment_date: appointmentDateTime,
+            pickup_service: formData.pickup_service,
+            pickup_address: formData.pickup_address,
+            notes: formData.notes,
+            price: pet.price ? parseFloat(pet.price) : null,
+            status: formData.status
+          };
+          return createAppointment(data);
+        });
+
+        await Promise.all(createPromises);
+        
         // Mostrar animação de sucesso apenas para novos agendamentos
         setShowSuccess(true);
         onSave();
@@ -138,7 +195,11 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
                 <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
               </svg>
             </div>
-            <h2 className="success-message">Agendamento criado com sucesso!</h2>
+            <h2 className="success-message">
+              {formData.pets.filter(p => p.name.trim() !== '').length > 1 
+                ? `${formData.pets.filter(p => p.name.trim() !== '').length} agendamentos criados com sucesso!`
+                : 'Agendamento criado com sucesso!'}
+            </h2>
           </div>
         ) : (
           <>
@@ -148,18 +209,6 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
             </div>
 
             <form onSubmit={handleSubmit} className="appointment-form">
-          <div className="form-group">
-            <label>Nome do Pet *</label>
-            <input
-              type="text"
-              name="pet_name"
-              value={formData.pet_name}
-              onChange={handleChange}
-              required
-              placeholder="Ex: Rex"
-            />
-          </div>
-
           <div className="form-group">
             <label>Nome do Dono *</label>
             <input
@@ -183,48 +232,85 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
             />
           </div>
 
-          <div className="form-group">
-            <label>Serviço</label>
-            <select
-              name="service_id"
-              value={formData.service_id}
-              onChange={handleChange}
-            >
-              <option value="">Selecione um serviço</option>
-              {services.map(service => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
+          <div className="pets-section">
+            <div className="pets-header">
+              <label>Pets *</label>
+              {!appointment && (
+                <button
+                  type="button"
+                  className="add-pet-button"
+                  onClick={addPet}
+                >
+                  + Adicionar Pet
+                </button>
+              )}
+            </div>
+            {formData.pets.map((pet, index) => (
+              <div key={index} className="pet-item">
+                <div className="pet-item-header">
+                  <span className="pet-number">Pet {index + 1}</span>
+                  {!appointment && formData.pets.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-pet-button"
+                      onClick={() => removePet(index)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label>Nome do Pet *</label>
+                  <input
+                    type="text"
+                    value={pet.name}
+                    onChange={(e) => handlePetChange(index, 'name', e.target.value)}
+                    required
+                    placeholder="Ex: Rex"
+                  />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Serviço</label>
+                    <select
+                      value={pet.service_id}
+                      onChange={(e) => handlePetChange(index, 'service_id', e.target.value)}
+                    >
+                      <option value="">Selecione um serviço</option>
+                      {services.map(service => (
+                        <option key={service.id} value={service.id}>
+                          {service.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Preço (R$)</label>
+                    <input
+                      type="number"
+                      value={pet.price}
+                      onChange={(e) => handlePetChange(index, 'price', e.target.value)}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Preço (R$)</label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                <option value="scheduled">Agendado</option>
-                <option value="completed">Concluído</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label>Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+            >
+              <option value="scheduled">Agendado</option>
+              <option value="completed">Concluído</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
           </div>
 
           <div className="form-row">

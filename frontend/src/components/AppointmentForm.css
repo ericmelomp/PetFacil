@@ -322,6 +322,103 @@
   }
 }
 
+/* Pets Section */
+.pets-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+}
+
+.pets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.pets-header label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.add-pet-button {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.add-pet-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pet-item {
+  background: white;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+.pet-item:last-child {
+  margin-bottom: 0;
+}
+
+.pet-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pet-number {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.remove-pet-button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: all var(--transition);
+}
+
+.remove-pet-button:hover {
+  background: #b91c1c;
+  transform: scale(1.1);
+}
+
+.pet-item .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.pet-item .form-group:last-child {
+  margin-bottom: 0;
+}
+
 @media (max-width: 768px) {
   .modal-content {
     max-width: 100%;
@@ -359,6 +456,16 @@
 
   .success-message {
     font-size: 1.2rem;
+  }
+
+  .pets-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .add-pet-button {
+    width: 100%;
   }
 }
 
