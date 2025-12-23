@@ -175,6 +175,7 @@ const BillingView = ({ appointments }) => {
   return (
     <div className="billing-view">
       <div className="billing-header">
+        <span className="material-symbols-outlined billing-icon">attach_money</span>
         <h2>Faturamento</h2>
       </div>
 
