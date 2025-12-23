@@ -235,15 +235,6 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
           <div className="pets-section">
             <div className="pets-header">
               <label>Pets *</label>
-              {!appointment && (
-                <button
-                  type="button"
-                  className="add-pet-button"
-                  onClick={addPet}
-                >
-                  + Adicionar Pet
-                </button>
-              )}
             </div>
             {formData.pets.map((pet, index) => (
               <div key={index} className="pet-item">
@@ -296,6 +287,16 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
                     />
                   </div>
                 </div>
+                {!appointment && (
+                  <button
+                    type="button"
+                    className="add-pet-button-inline"
+                    onClick={addPet}
+                    title="Adicionar outro pet"
+                  >
+                    +
+                  </button>
+                )}
               </div>
             ))}
           </div>
