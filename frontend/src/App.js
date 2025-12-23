@@ -4,7 +4,6 @@ import AgendaView from './components/AgendaView';
 import AppointmentManagement from './components/AppointmentManagement';
 import ServicesManagement from './components/ServicesManagement';
 import BillingView from './components/BillingView';
-import BillingAuth from './components/BillingAuth';
 import { getAppointments, getServices } from './services/api';
 import CalendarIcon from './components/icons/CalendarIcon';
 import AppointmentsIcon from './components/icons/AppointmentsIcon';
@@ -16,9 +15,6 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
-  const [isBillingAuthenticated, setIsBillingAuthenticated] = useState(false);
-  const [showBillingAuth, setShowBillingAuth] = useState(false);
-  const [previousView, setPreviousView] = useState('agenda');
 
   useEffect(() => {
     loadData();
@@ -38,34 +34,8 @@ function App() {
   };
 
   const handleViewChange = (view) => {
-    // Se sair do faturamento, resetar autenticação
-    if (currentView === 'billing' && view !== 'billing') {
-      setIsBillingAuthenticated(false);
-    }
-    
-    // Se tentar acessar faturamento, verificar autenticação
-    if (view === 'billing') {
-      if (!isBillingAuthenticated) {
-        setPreviousView(currentView);
-        setShowBillingAuth(true);
-        setMenuOpen(false);
-        return;
-      }
-    }
-    
     setCurrentView(view);
     setMenuOpen(false);
-  };
-
-  const handleBillingAuth = (authenticated) => {
-    setShowBillingAuth(false);
-    if (authenticated) {
-      setIsBillingAuthenticated(true);
-      setCurrentView('billing');
-    } else {
-      // Se cancelou, volta para a view anterior
-      setCurrentView(previousView);
-    }
   };
 
   const menuItems = [
@@ -149,15 +119,10 @@ function App() {
             onUpdate={loadData}
           />
         )}
-        {currentView === 'billing' && isBillingAuthenticated && (
+        {currentView === 'billing' && (
           <BillingView appointments={appointments} />
         )}
       </main>
-
-      {/* Modal de autenticação para faturamento */}
-      {showBillingAuth && (
-        <BillingAuth onAuthenticate={handleBillingAuth} />
-      )}
     </div>
   );
 }
