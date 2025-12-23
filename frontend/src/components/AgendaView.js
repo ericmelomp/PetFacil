@@ -299,17 +299,8 @@ const AgendaView = ({ appointments }) => {
                   <>
                     <div className="agenda-month-day-number">{date.getDate()}</div>
                     {dayAppointments.length > 0 && (
-                      <div className="agenda-month-dots">
-                        {dayAppointments.slice(0, 3).map(apt => (
-                          <div
-                            key={apt.id}
-                            className={`agenda-month-dot ${apt.pickup_service ? 'pickup' : ''}`}
-                            title={`${apt.pet_name} - ${formatTime(apt.appointment_date)}`}
-                          />
-                        ))}
-                        {dayAppointments.length > 3 && (
-                          <div className="agenda-month-more">+{dayAppointments.length - 3}</div>
-                        )}
+                      <div className="agenda-month-count-badge">
+                        {dayAppointments.length}
                       </div>
                     )}
                   </>

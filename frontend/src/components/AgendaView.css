@@ -545,6 +545,7 @@
   overflow: hidden;
   box-sizing: border-box;
   min-width: 0;
+  position: relative;
 }
 
 .agenda-month-day:hover:not(.empty) {
@@ -573,6 +574,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.agenda-month-count-badge {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  background: #4A90E2;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .agenda-month-dots {
@@ -816,6 +834,14 @@
   
   .agenda-month-day-number {
     font-size: 0.75rem;
+  }
+  
+  .agenda-month-count-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+    bottom: 0.15rem;
+    right: 0.15rem;
   }
   
   .agenda-month-dots {
