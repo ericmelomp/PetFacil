@@ -39,7 +39,7 @@ function App() {
   };
 
   const menuItems = [
-    { id: 'agenda', label: 'Agenda', Icon: CalendarIcon },
+    { id: 'agenda', label: 'Visualização', Icon: CalendarIcon },
     { id: 'appointments', label: 'Agendamentos', Icon: AppointmentsIcon },
     { id: 'services', label: 'Serviços', Icon: ServicesIcon },
     { id: 'billing', label: 'Faturamento', Icon: BillingIcon }
