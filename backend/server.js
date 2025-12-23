@@ -51,7 +51,7 @@ async function initDatabase() {
       )
     `);
 
-    // Add price, status and paid columns if they don't exist (for existing databases)
+    // Add price, status, paid and payment_method columns if they don't exist (for existing databases)
     await pool.query(`
       DO $$ 
       BEGIN
@@ -66,6 +66,10 @@ async function initDatabase() {
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                       WHERE table_name='appointments' AND column_name='paid') THEN
           ALTER TABLE appointments ADD COLUMN paid BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                      WHERE table_name='appointments' AND column_name='payment_method') THEN
+          ALTER TABLE appointments ADD COLUMN payment_method VARCHAR(20);
         END IF;
       END $$;
     `);
@@ -179,14 +183,15 @@ app.post('/api/appointments', async (req, res) => {
       pickup_address,
       notes,
       price,
-      status
+      status,
+      payment_method
     } = req.body;
     
     const result = await pool.query(
       `INSERT INTO appointments 
-       (pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service, pickup_address, notes, price, status, paid)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service || false, pickup_address, notes, price || null, status || 'scheduled', false]
+       (pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service, pickup_address, notes, price, status, paid, payment_method)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      [pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service || false, pickup_address, notes, price || null, status || 'scheduled', false, payment_method || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -209,15 +214,16 @@ app.put('/api/appointments/:id', async (req, res) => {
       notes,
       price,
       status,
-      paid
+      paid,
+      payment_method
     } = req.body;
     
     const result = await pool.query(
       `UPDATE appointments SET
        pet_name = $1, owner_name = $2, owner_phone = $3, service_id = $4,
-       appointment_date = $5, pickup_service = $6, pickup_address = $7, notes = $8, price = $9, status = $10, paid = COALESCE($11, paid)
-       WHERE id = $12 RETURNING *`,
-      [pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service || false, pickup_address, notes, price || null, status || 'scheduled', paid !== undefined ? paid : null, id]
+       appointment_date = $5, pickup_service = $6, pickup_address = $7, notes = $8, price = $9, status = $10, paid = COALESCE($11, paid), payment_method = $12
+       WHERE id = $13 RETURNING *`,
+      [pet_name, owner_name, owner_phone, service_id, appointment_date, pickup_service || false, pickup_address, notes, price || null, status || 'scheduled', paid !== undefined ? paid : null, payment_method || null, id]
     );
     
     if (result.rows.length === 0) {
@@ -350,11 +356,31 @@ app.get('/api/billing', async (req, res) => {
       }))
       .sort((a, b) => b.count - a.count);
 
+    // Group by payment method
+    const byPaymentMethod = {};
+    result.rows.forEach(apt => {
+      const paymentMethod = apt.payment_method || 'Não informado';
+      if (!byPaymentMethod[paymentMethod]) {
+        byPaymentMethod[paymentMethod] = { count: 0, total: 0 };
+      }
+      byPaymentMethod[paymentMethod].count += 1;
+      byPaymentMethod[paymentMethod].total += parseFloat(apt.price) || 0;
+    });
+
+    const byPaymentMethodArray = Object.entries(byPaymentMethod)
+      .map(([name, data]) => ({
+        name,
+        count: data.count,
+        total: data.total
+      }))
+      .sort((a, b) => b.total - a.total);
+
     res.json({
       total,
       count,
       byDay: sortedByDay,
-      byService: byServiceArray
+      byService: byServiceArray,
+      byPaymentMethod: byPaymentMethodArray
     });
   } catch (error) {
     console.error('Error fetching billing:', error);

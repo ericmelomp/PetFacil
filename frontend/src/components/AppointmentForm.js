@@ -4,7 +4,7 @@ import { createAppointment, updateAppointment, deleteAppointment } from '../serv
 
 const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave }) => {
   const [formData, setFormData] = useState({
-    pets: [{ name: '', service_id: '', price: '' }],
+    pets: [{ name: '', service_id: '', price: '', payment_method: '' }],
     owner_name: '',
     owner_phone: '',
     appointment_date: '',
@@ -32,7 +32,8 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
         pets: [{
           name: appointment.pet_name || '',
           service_id: appointment.service_id || '',
-          price: appointment.price || ''
+          price: appointment.price || '',
+          payment_method: appointment.payment_method || ''
         }],
         owner_name: appointment.owner_name || '',
         owner_phone: appointment.owner_phone || '',
@@ -77,7 +78,7 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
   const addPet = () => {
     setFormData(prev => ({
       ...prev,
-      pets: [...prev.pets, { name: '', service_id: '', price: '' }]
+      pets: [...prev.pets, { name: '', service_id: '', price: '', payment_method: '' }]
     }));
   };
 
@@ -118,7 +119,8 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
           pickup_address: formData.pickup_address,
           notes: formData.notes,
           price: formData.pets[0].price ? parseFloat(formData.pets[0].price) : null,
-          status: formData.status
+          status: formData.status,
+          payment_method: formData.pets[0].payment_method || null
         };
         await updateAppointment(appointment.id, data);
         onSave();
@@ -144,7 +146,8 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
             pickup_address: formData.pickup_address,
             notes: formData.notes,
             price: pet.price ? parseFloat(pet.price) : null,
-            status: formData.status
+            status: formData.status,
+            payment_method: pet.payment_method || null
           };
           return createAppointment(data);
         });
@@ -295,6 +298,19 @@ const AppointmentForm = ({ appointment, services, selectedDate, onClose, onSave 
                       placeholder="0.00"
                     />
                   </div>
+                </div>
+                <div className="form-group">
+                  <label>Meio de Pagamento</label>
+                  <select
+                    value={pet.payment_method}
+                    onChange={(e) => handlePetChange(index, 'payment_method', e.target.value)}
+                  >
+                    <option value="">Selecione o meio de pagamento</option>
+                    <option value="Pix">Pix</option>
+                    <option value="Crédito">Crédito</option>
+                    <option value="Débito">Débito</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                  </select>
                 </div>
               </div>
             ))}

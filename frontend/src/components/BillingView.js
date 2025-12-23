@@ -317,6 +317,103 @@ const BillingView = ({ appointments }) => {
                   </div>
                 </div>
               )}
+
+              {/* Gráfico de Pizza - Meios de Pagamento */}
+              {billingData.byPaymentMethod && billingData.byPaymentMethod.length > 0 && (
+                <div className="billing-pie-chart">
+                  <h4>Meios de Pagamento</h4>
+                  <div className="pie-chart-container">
+                    <svg className="pie-chart-svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+                      {(() => {
+                        const totalCount = billingData.byPaymentMethod.reduce((sum, p) => sum + p.count, 0);
+                        if (totalCount === 0) return null;
+                        
+                        let currentAngle = -90; // Start at top
+                        const paymentColors = {
+                          'Pix': '#32CD32',
+                          'Crédito': '#4169E1',
+                          'Débito': '#FF6347',
+                          'Dinheiro': '#FFD700',
+                          'Não informado': '#999999'
+                        };
+                        
+                        return billingData.byPaymentMethod.map((payment, index) => {
+                          const percentage = (payment.count / totalCount) * 100;
+                          const angle = (percentage / 100) * 360;
+                          const startAngle = currentAngle;
+                          const endAngle = currentAngle + angle;
+                          
+                          // Calculate arc path
+                          const startAngleRad = (startAngle * Math.PI) / 180;
+                          const endAngleRad = (endAngle * Math.PI) / 180;
+                          const centerX = 100;
+                          const centerY = 100;
+                          const radius = 80;
+                          
+                          const x1 = centerX + radius * Math.cos(startAngleRad);
+                          const y1 = centerY + radius * Math.sin(startAngleRad);
+                          const x2 = centerX + radius * Math.cos(endAngleRad);
+                          const y2 = centerY + radius * Math.sin(endAngleRad);
+                          
+                          const largeArcFlag = angle > 180 ? 1 : 0;
+                          
+                          const pathData = [
+                            `M ${centerX} ${centerY}`,
+                            `L ${x1} ${y1}`,
+                            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                            'Z'
+                          ].join(' ');
+                          
+                          currentAngle = endAngle;
+                          const color = paymentColors[payment.name] || '#999999';
+                          
+                          return (
+                            <path
+                              key={payment.name}
+                              d={pathData}
+                              fill={color}
+                              stroke="#fff"
+                              strokeWidth="2"
+                              className="pie-segment"
+                            />
+                          );
+                        });
+                      })()}
+                    </svg>
+                    <div className="pie-legend">
+                      {billingData.byPaymentMethod.map((payment, index) => {
+                        const totalCount = billingData.byPaymentMethod.reduce((sum, p) => sum + p.count, 0);
+                        const totalAmount = billingData.byPaymentMethod.reduce((sum, p) => sum + p.total, 0);
+                        const percentage = totalCount > 0 ? ((payment.count / totalCount) * 100).toFixed(1) : 0;
+                        const amountPercentage = totalAmount > 0 ? ((payment.total / totalAmount) * 100).toFixed(1) : 0;
+                        const paymentColors = {
+                          'Pix': '#32CD32',
+                          'Crédito': '#4169E1',
+                          'Débito': '#FF6347',
+                          'Dinheiro': '#FFD700',
+                          'Não informado': '#999999'
+                        };
+                        const color = paymentColors[payment.name] || '#999999';
+                        
+                        return (
+                          <div key={payment.name} className="pie-legend-item">
+                            <div 
+                              className="pie-legend-color" 
+                              style={{ backgroundColor: color }}
+                            />
+                            <div className="pie-legend-text">
+                              <span className="pie-legend-name">{payment.name}</span>
+                              <span className="pie-legend-value">
+                                {payment.count} ({percentage}%) - {formatCurrency(payment.total)} ({amountPercentage}%)
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Gráfico Minimalista */}
               <div className="billing-chart">

@@ -265,6 +265,12 @@ const AppointmentManagement = ({ appointments, services, onUpdate }) => {
                       <span className="info-value price">R$ {parseFloat(appointment.price).toFixed(2)}</span>
                     </div>
                   )}
+                  {appointment.payment_method && (
+                    <div className="appointment-info-row">
+                      <span className="info-label">Pagamento:</span>
+                      <span className="info-value">{appointment.payment_method}</span>
+                    </div>
+                  )}
                   {appointment.pickup_service && (
                     <div className="appointment-info-row">
                       <span className="info-label">→ Leva e Traz:</span>
