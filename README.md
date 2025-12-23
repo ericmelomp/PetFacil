@@ -33,8 +33,8 @@ docker-compose up -d
 3. Aguarde alguns instantes para os containers iniciarem
 
 4. Acesse o sistema:
-   - **No computador**: http://localhost:3333
-   - **No celular (mesma rede Wi-Fi)**: http://[IP_DO_COMPUTADOR]:3333
+   - **No computador**: http://localhost:3000
+   - **No celular (mesma rede Wi-Fi)**: http://[IP_DO_COMPUTADOR]:3000
    - Backend API: http://localhost:3001/api
 
 ### Acesso pelo Celular
@@ -47,12 +47,12 @@ Para acessar do celular na mesma rede Wi-Fi:
 
 2. **Libere o Firewall (se necessário):**
    - Execute o arquivo `liberar-firewall.bat` como Administrador
-   - Ou manualmente: Painel de Controle > Firewall > Regras de Entrada > Nova Regra > Porta > TCP > 3333
+   - Ou manualmente: Painel de Controle > Firewall > Regras de Entrada > Nova Regra > Porta > TCP > 3000
 
 3. **Acesse do celular:**
    - Abra o navegador no celular
-   - Digite: `http://[IP_DO_COMPUTADOR]:3333`
-   - Exemplo: `http://192.168.15.6:3333`
+   - Digite: `http://[IP_DO_COMPUTADOR]:3000`
+   - Exemplo: `http://192.168.15.6:3000`
 
 **Importante**: O celular precisa estar na mesma rede Wi-Fi do computador!
 
@@ -107,9 +107,9 @@ environment:
 
 Para acessar remotamente via VPN (quando não estiver na mesma rede):
 
-1. Configure sua VPN para permitir acesso à porta 3333 (frontend)
-2. Acesse usando o IP do servidor: `http://[IP_DO_SERVIDOR]:3333`
-3. Certifique-se de que o firewall do servidor permite conexões na porta 3333
+1. Configure sua VPN para permitir acesso à porta 3000 (frontend)
+2. Acesse usando o IP do servidor: `http://[IP_DO_SERVIDOR]:3000`
+3. Certifique-se de que o firewall do servidor permite conexões na porta 3000
 
 ## Parar o Sistema
 
